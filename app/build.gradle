@@ -45,5 +45,4 @@ dependencies {
     compile 'com.google.dagger:dagger-android-support:2.13'
 
 
-
 }

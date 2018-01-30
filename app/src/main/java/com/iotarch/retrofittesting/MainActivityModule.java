@@ -11,6 +11,7 @@ import dagger.android.ActivityKey;
 import dagger.android.AndroidInjector;
 import dagger.android.ContributesAndroidInjector;
 import dagger.multibindings.IntoMap;
+import okhttp3.OkHttpClient;
 
 /**
  * Created by JamesHo on 2018/1/27.
@@ -28,4 +29,8 @@ public abstract class MainActivityModule {
     static User provideUser() {
         return new User();
     }
+
+
+
+
 }

@@ -2,19 +2,18 @@ package com.iotarch.retrofittesting.di;
 
 import android.app.Application;
 
-import com.iotarch.retrofittesting.MainActivityModule;
+import javax.inject.Singleton;
 
 import dagger.BindsInstance;
 import dagger.Component;
-import dagger.android.AndroidInjectionModule;
 import dagger.android.AndroidInjector;
 import dagger.android.DaggerApplication;
-import dagger.android.support.AndroidSupportInjection;
 import dagger.android.support.AndroidSupportInjectionModule;
 
 /**
  * Created by JamesHo on 2018/1/27.
  */
+@Singleton
 @Component(modules = {AndroidSupportInjectionModule.class, ActivityBuilder.class,AppModule.class})
 public interface AppComponent extends AndroidInjector<DaggerApplication>{
 
