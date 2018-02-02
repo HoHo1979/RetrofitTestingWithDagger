@@ -1,22 +1,26 @@
 package com.iotarch.retrofittesting;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.util.List;
+import com.iotarch.retrofittesting.entity.BitStampAuth;
+import com.iotarch.retrofittesting.entity.BitStampBalance;
+import com.iotarch.retrofittesting.entity.BitStampBtcUsd;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.inject.Inject;
 
 import dagger.android.support.DaggerAppCompatActivity;
 
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 
@@ -65,8 +69,6 @@ public class MainActivity extends DaggerAppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
 
-            if(btcprice!=null)
-            tx_name.setText(btcprice);
 
         }
 
@@ -80,6 +82,7 @@ public class MainActivity extends DaggerAppCompatActivity {
                 @Override
                 public void onResponse(Call<BitStampBtcUsd> call, retrofit2.Response<BitStampBtcUsd> response) {
                     btcprice = response.body().getLast();
+                    tx_name.setText(btcprice);
                 }
 
                 @Override
@@ -87,6 +90,51 @@ public class MainActivity extends DaggerAppCompatActivity {
                     Log.d(TAG, "onFailure: "+t.getMessage());
                 }
             });
+
+            String secret="Your Secret Key";
+            String apiKey="Your API Key";
+            Integer nonce = Integer.parseInt(String.valueOf(new Date().getTime()/1000));
+
+            String message = nonce+ "Your BitStamp ID"+ apiKey;
+            String signature="";
+
+            try {
+                Mac hasher = Mac.getInstance("HmacSHA256");
+                hasher.init(new SecretKeySpec(secret.getBytes(),"HmacSHA256"));
+                byte[] hash = hasher.doFinal(message.getBytes());
+
+                signature=byteArrayToHexString(hash);
+                signature = signature.toUpperCase();
+                Log.d(TAG, "doInBackground: "+signature);
+
+
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            }
+
+     //       BitStampAuth auth = new BitStampAuth(apiKey,signature,nonce);
+     //       Call<BitStampBalance> balance = retrofit.create(RestApi.class).getBalance(auth.getKey(),auth.getSignature(),auth.getNonce());
+
+            Call<BitStampBalance> balance = retrofit.create(RestApi.class).getBalance(apiKey,signature,nonce);
+
+            balance.enqueue(new retrofit2.Callback<BitStampBalance>() {
+                @Override
+                public void onResponse(Call<BitStampBalance> call, retrofit2.Response<BitStampBalance> response) {
+
+                    Log.d(TAG, "1onResponse:"+response.body().getXrp_balance());
+                    Log.d(TAG, "2onResponse:"+response.body().getUsd_balance());
+                    Log.d(TAG, "3onResponse:"+response.body().getBtc_balance());
+
+                }
+
+                @Override
+                public void onFailure(Call<BitStampBalance> call, Throwable t) {
+                    Log.d(TAG, "onFailure: "+t.getMessage());
+                }
+            });
+
 
 
 //            Request request = new Request.Builder()
@@ -106,5 +154,16 @@ public class MainActivity extends DaggerAppCompatActivity {
         }
     }
 
+
+    public static String byteArrayToHexString(byte[] array) {
+        StringBuffer hexString = new StringBuffer();
+        for (byte b : array) {
+            int intVal = b & 0xff;
+            if (intVal < 0x10)
+                hexString.append("0");
+            hexString.append(Integer.toHexString(intVal));
+        }
+        return hexString.toString();
+    }
 
 }

@@ -1,4 +1,4 @@
-package com.iotarch.retrofittesting;
+package com.iotarch.retrofittesting.entity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

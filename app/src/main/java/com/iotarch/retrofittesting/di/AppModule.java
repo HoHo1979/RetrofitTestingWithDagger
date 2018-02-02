@@ -26,7 +26,7 @@ public abstract class AppModule{
     @Binds
     abstract Context provideContext(Application application);
 
-    static String mBaseUrl="https://www.bitstamp.net";
+    static String mBaseUrl="https://www.bitstamp.net/api/";
 
 //    public AppModule(String mBaseUrl) {
 //        this.mBaseUrl = mBaseUrl;
