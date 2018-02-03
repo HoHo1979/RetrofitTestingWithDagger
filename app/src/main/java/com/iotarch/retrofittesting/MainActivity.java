@@ -3,6 +3,7 @@ package com.iotarch.retrofittesting;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -27,6 +28,15 @@ import retrofit2.Retrofit;
 public class MainActivity extends DaggerAppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName() ;
+
+
+    // Put your Securet Key,API kew below and Bitstamp ID Below to create Signature.
+
+    static String secret="Your Secret Key";
+    static String apiKey="Your API Key";
+    static Integer nonce = Integer.parseInt(String.valueOf(new Date().getTime()/1000));
+    static String bitStampID= "Your BitStamp ID";
+
 
     @Inject
     User user;
@@ -55,6 +65,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     static class MyAsync extends AsyncTask<Void,Void,Void>{
 
         OkHttpClient client;
+        
         Retrofit retrofit;
 
         String btcprice;
@@ -91,28 +102,8 @@ public class MainActivity extends DaggerAppCompatActivity {
                 }
             });
 
-            String secret="Your Secret Key";
-            String apiKey="Your API Key";
-            Integer nonce = Integer.parseInt(String.valueOf(new Date().getTime()/1000));
 
-            String message = nonce+ "Your BitStamp ID"+ apiKey;
-            String signature="";
-
-            try {
-                Mac hasher = Mac.getInstance("HmacSHA256");
-                hasher.init(new SecretKeySpec(secret.getBytes(),"HmacSHA256"));
-                byte[] hash = hasher.doFinal(message.getBytes());
-
-                signature=byteArrayToHexString(hash);
-                signature = signature.toUpperCase();
-                Log.d(TAG, "doInBackground: "+signature);
-
-
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            }
+            String signature = getSignature();
 
      //       BitStampAuth auth = new BitStampAuth(apiKey,signature,nonce);
      //       Call<BitStampBalance> balance = retrofit.create(RestApi.class).getBalance(auth.getKey(),auth.getSignature(),auth.getNonce());
@@ -135,23 +126,32 @@ public class MainActivity extends DaggerAppCompatActivity {
                 }
             });
 
-
-
-//            Request request = new Request.Builder()
-//                    .url("http://www.vogella.com/index.html")
-//                    .build();
-//
-//
-//            try {
-//                Response response = client.newCall(request).execute();
-//                Log.d(TAG, "doInBackground: "+response.body().string());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
             
             return null;
         }
+    }
+
+    @NonNull
+    private static String getSignature() {
+        String message = nonce+ bitStampID + apiKey;
+        String signature="";
+
+        try {
+            Mac hasher = Mac.getInstance("HmacSHA256");
+            hasher.init(new SecretKeySpec(secret.getBytes(),"HmacSHA256"));
+            byte[] hash = hasher.doFinal(message.getBytes());
+
+            signature=byteArrayToHexString(hash);
+            signature = signature.toUpperCase();
+            Log.d(TAG, "doInBackground: "+signature);
+
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+        return signature;
     }
 
 
